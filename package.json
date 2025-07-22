@@ -1,0 +1,19 @@
+{
+  "name": "greet",
+  "version": "1.0.0",
+  "description": "A smart contract to test setup with hardhat",
+  "license": "ISC",
+  "author": "blockchainrafik",
+  "type": "commonjs",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "hardhat": "^2.26.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  }
+}
