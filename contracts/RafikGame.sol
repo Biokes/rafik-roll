@@ -11,9 +11,9 @@ contract RafikGame {
     event RandomRequested(address indexed player, uint256 requestId);
     event RandomResolved(uint256 indexed timeStamp,uint randomValues);
 
-    constructor(address generatorAddress) {
+    constructor(address generatorAddress, address gameTokenAddress) {
         generator = IRafikGenerator(generatorAddress);
-        gameToken = IERC20(gameToken);
+        gameToken = IERC20(gameTokenAddress);
     }
 
     function generateRandomumber() public returns(uint){
@@ -30,6 +30,7 @@ contract RafikGame {
         address[] players;
         uint roll;
     }
+    
     mapping (uint => Game) private allGames;
     uint constant private BASE_FEE = 1000000000000000000; 
 
@@ -50,7 +51,7 @@ contract RafikGame {
         }
         return false;
     }
-    
+
     function rollDice(uint gameId) external {
         uint roll = generateRandomumber();
         Game storage game = allGames[gameId];
@@ -58,3 +59,8 @@ contract RafikGame {
         game.roll = roll;
     }
 }
+// test only 4 player can join game
+// test that when 4 players join game no one can join again
+// test that if a player selects a roll anither player cannit select roll 
+// test that if a players wins he is sent the pool prize
+// test that when no one wins from the roll the contract owns the all the stakes
