@@ -3,8 +3,8 @@ import { expect } from "chai";
 
 
 describe("rafik game test suite", function () {
-    var RafikGame, game, RafikToken, token, Generator, generator;
-    var p1, p2, p3, p4, p5, p6;
+    let RafikGame, game, RafikToken, token, Generator, generator;
+    let p1, p2, p3, p4, p5, p6;
     const BASE_FEE = ethers.parseEther("1");
      async function deployAll() { 
         Generator = await ethers.getContractFactory("TestGenerator");
@@ -19,7 +19,7 @@ describe("rafik game test suite", function () {
     describe("player game entrance", function () {
         it("tests 4 players can join a game", async function () { 
             (p1, p2, p3, p4, p5, game) = await hre.loadFixture(deployAll);
-            await game.connect(p1).joinGame();
+            await game.connect(p1).createGame();
         })
      })
 
