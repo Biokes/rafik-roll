@@ -46,7 +46,7 @@ contract RafikGame {
     }
 
     function rollDice(uint gameId) external {
-        uint roll = generator.generateRandomumber();
+        uint roll = generator.getRandomNumber();
         Game storage game = allGames[gameId];
         require(game.isActive,"Invalid Gameid");
         game.roll = roll;
