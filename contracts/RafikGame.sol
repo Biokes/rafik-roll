@@ -1,47 +1,60 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
 
-interface IRafikGenerator {
-    function requestRandomWords(bool enableNativePayment) external returns (uint256 requestId);
-    function getRequestStatus(uint256 _requestId) external view returns (bool fulfilled, uint256[] memory randomWords);
-}
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IRafikGenerator} from "./IRafikGenerator.sol";
 
 contract RafikGame {
     IRafikGenerator public generator;
-
-    // mapping player => last request id
-    mapping(address => uint256) public playerRequest;
+    IERC20 private gameToken;
 
     event RandomRequested(address indexed player, uint256 requestId);
-    event RandomResolved(address indexed player,uint256 requestId,uint256 randomValue);
+    event RandomResolved(uint256 indexed timeStamp,uint randomValues);
 
     constructor(address generatorAddress) {
         generator = IRafikGenerator(generatorAddress);
+        gameToken = IERC20(gameToken);
     }
 
-    function requestRandomForPlayer(bool enableNativePayment) external {
-        uint256 id = generator.requestRandomWords(enableNativePayment);
-        playerRequest[msg.sender] = id;
-        emit RandomRequested(msg.sender, id);
+    function generateRandomumber() public returns(uint){
+        uint256 requestID = generator.requestRandomWords(true);
+        (bool fulfilled, uint256[] memory words) = generator.getRequestStatus(requestID);
+        require(fulfilled, "number generation failed and is not fulfilled yet");
+        uint random = words.length > 0 ? words[0] : 0;
+        emit RandomResolved(block.timestamp, random); 
+        return random%6;
+    }
+    struct Game{
+        uint gameId;
+        bool isActive;
+        address[] players;
+        uint roll;
+    }
+    mapping (uint => Game) private allGames;
+    uint constant private BASE_FEE = 1000000000000000000; 
+
+    function joinGame(uint gameId)external {
+        Game memory game = allGames[gameId];
+        require(game.isActive,"Invalid Game Id Provided");
+        require(!isInGame(msg.sender, game),"Already in this game");
+        require(gameToken.balanceOf(msg.sender)> BASE_FEE, "Insufficient balance to join game");
+        gameToken.approve(address(this), BASE_FEE);
+        gameToken.transferFrom(msg.sender, address(this),BASE_FEE);
     }
 
-    // anyone can call to resolve the random once fulfilled (pull/poll pattern)
-    // this reads from the generator and emits the resolved value for on-chain use.
-    function resolveRandomForPlayer(address player) external {
-        uint256 reqId = playerRequest[player];
-        require(reqId != 0, "no request for player");
-        (bool fulfilled, uint256[] memory words) = generator.getRequestStatus(reqId);
-        require(fulfilled, "not fulfilled yet");
-
-        // use first word as the random value
-        uint256 random = words.length > 0 ? words[0] : 0;
-
-        // example: map to range 0..99
-        uint256 value = random % 100;
-
-        emit RandomResolved(player, reqId, value);
-
-        // clear stored request
-        delete playerRequest[player];
+    function isInGame(address playerAddress, Game memory game) private pure returns (bool){
+        uint index;
+        for(;index<game.players.length;){
+            if(game.players[index]== playerAddress) return true;
+            index++;
+        }
+        return false;
+    }
+    
+    function rollDice(uint gameId) external {
+        uint roll = generateRandomumber();
+        Game storage game = allGames[gameId];
+        require(game.isActive,"Invalid Gameid");
+        game.roll = roll;
     }
 }
