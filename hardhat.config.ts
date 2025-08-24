@@ -10,11 +10,11 @@ const config: HardhatUserConfig = {
    etherscan: {
       apiKey: ETHERSCAN_API_KEY,
     },
-  networks: {
-    localhost: {
-        url: "http://127.0.0.1:8545",
-      },
-   }
+  // networks: {
+  //   localhost: {
+  //       url: "http://127.0.0.1:8545",
+  //     },
+  //  }
   // networks: {
   //   sepolia: {
   //     url: SEPOLIA_URL,
