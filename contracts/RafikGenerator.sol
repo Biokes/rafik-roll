@@ -31,6 +31,7 @@ contract RafikGenerator is  VRFConsumerBaseV2Plus, IRafikGenerator{
     uint32 public wordsRequestedPerRequest = 5;
 
     constructor() VRFConsumerBaseV2Plus(CORDINATOR_ADDRESS) {}
+    
     function requestRandomWords(bool enableNativePayment) external onlyOwner returns (uint256 requestId) {
         requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
@@ -71,7 +72,7 @@ contract RafikGenerator is  VRFConsumerBaseV2Plus, IRafikGenerator{
     }
 
     function getRandomNumber() external returns(uint){
-        uint256 requestID = this.requestRandomWords(true);
+        uint256 requestID = this.requestRandomWords(false);
         (bool fulfilled, uint256[] memory words) = this.getRequestStatus(requestID);
         require(fulfilled, "number generation failed and is not fulfilled yet");
         uint random = words.length > 0 ? words[0] : 0;

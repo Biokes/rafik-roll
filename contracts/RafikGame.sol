@@ -16,22 +16,15 @@ contract RafikGame {
         gameToken = IERC20(gameTokenAddress);
     }
 
-    function generateRandomumber() public returns(uint){
-        uint256 requestID = generator.requestRandomWords(true);
-        (bool fulfilled, uint256[] memory words) = generator.getRequestStatus(requestID);
-        require(fulfilled, "number generation failed and is not fulfilled yet");
-        uint random = words.length > 0 ? words[0] : 0;
-        emit RandomResolved(block.timestamp, random); 
-        return random%6;
-    }
     struct Game{
         uint gameId;
         bool isActive;
         address[] players;
         uint roll;
     }
-    
+
     mapping (uint => Game) private allGames;
+
     uint constant private BASE_FEE = 1000000000000000000; 
 
     function joinGame(uint gameId)external {
@@ -53,11 +46,12 @@ contract RafikGame {
     }
 
     function rollDice(uint gameId) external {
-        uint roll = generateRandomumber();
+        uint roll = generator.generateRandomumber();
         Game storage game = allGames[gameId];
         require(game.isActive,"Invalid Gameid");
         game.roll = roll;
     }
+
 }
 // test only 4 player can join game
 // test that when 4 players join game no one can join again
