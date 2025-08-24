@@ -35,12 +35,8 @@ contract RafikGenerator is  VRFConsumerBaseV2Plus{
     // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
     uint32 public wordsRequestedPerRequest = 5;
 
-    constructor(
-    ) VRFConsumerBaseV2Plus(CORDINATOR_ADDRESS) {
-    }
-    function requestRandomWords(
-        bool enableNativePayment
-    ) external onlyOwner returns (uint256 requestId) {
+    constructor() VRFConsumerBaseV2Plus(CORDINATOR_ADDRESS) {}
+    function requestRandomWords(bool enableNativePayment) external onlyOwner returns (uint256 requestId) {
         // Will revert if subscription is not set and funded.
         requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
