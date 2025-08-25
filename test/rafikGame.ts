@@ -35,22 +35,18 @@ describe("rafik game test suite", function () {
 
     it("tests a player cannot join twice", async function () {
       const { p1, game } = await loadFixture(deployAll);
-      await game
-        .connect(p1)
-        .createGameWithPrice(ethers.parseEther("1.2"));
-      await expect(game.connect(p1).joinGame(1001)).to.be.revertedWith(
-        "ALREADY JOINED GAME"
-      );
+      await game.connect(p1).createGameWithPrice(ethers.parseEther("1.2"));
+      await expect(game.connect(p1).joinGame(1001)).to.be.revertedWith("ALREADY JOINED GAME");
     });
-    //   it("tests 4 players with sufficient balance can join game", async function () {
-    //     const { p1, p2, p3, p4, game, token } = await loadFixture(deployAll);
-    //     const gameId = await game.connect(p1).createNewGame(ethers.parseEther("1.2"));
-    //     await token.connect(p1).transfer(p2.address,ethers.parseEther("3"));
-    //     await token.connect(p1).transfer(p3.address,ethers.parseEther("3"));
-    //     await token.connect(p1).transfer(p4.address,ethers.parseEther("3"));
-    //     await game.connect(p2).joinGame(gameId);
-    //     await game.connect(p3).joinGame(gameId);
-    //     await game.connect(p4).joinGame(gameId);
-    // });
+      it("tests 4 players with sufficient balance can join game", async function () {
+        const { p1, p2, p3, p4, game, token } = await loadFixture(deployAll);
+        const gameId = await game.connect(p1).createNewGame(ethers.parseEther("1.2"));
+        await token.connect(p1).transfer(p2.address,ethers.parseEther("3"));
+        await token.connect(p1).transfer(p3.address,ethers.parseEther("3"));
+        await token.connect(p1).transfer(p4.address,ethers.parseEther("3"));
+        await game.connect(p2).joinGame(gameId);
+        await game.connect(p3).joinGame(gameId);
+        await game.connect(p4).joinGame(gameId);
+    });
   });
 });
