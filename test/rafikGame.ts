@@ -39,7 +39,7 @@ describe("rafik game test suite", function () {
         });
           it("tests 4 players with sufficient balance can join game", async function () {
             const { p1, p2, p3, p4, game, token } = await loadFixture(deployAll);
-            const gameId = await game.connect(p1).createGameWithPrice.staticCall(BASE_FEE);
+            const gameId = await game.connect(p1).createGameWithPrice(BASE_FEE);
             await token.connect(p1).transfer(p2.address,ethers.parseEther("3"));
             await token.connect(p1).transfer(p3.address,ethers.parseEther("3"));
             await token.connect(p1).transfer(p4.address,ethers.parseEther("3"));
