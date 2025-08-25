@@ -24,12 +24,15 @@ contract RafikGame {
     }
 
     mapping (uint => Game) private allGames;
+    mapping (address=> bool) playersActivity;
 
+    uint private totalGameCounter;
     uint constant private BASE_FEE = 1000000000000000000; 
 
     function joinGame(uint gameId)external {
         Game memory game = allGames[gameId];
         require(game.isActive,"Invalid Game Id Provided");
+        // require(!playersActivity[msg.sender], "ALready in a game");
         require(!isInGame(msg.sender, game),"Already in this game");
         require(gameToken.balanceOf(msg.sender)> BASE_FEE, "Insufficient balance to join game");
         gameToken.approve(address(this), BASE_FEE);
@@ -51,7 +54,18 @@ contract RafikGame {
         require(game.isActive,"Invalid Gameid");
         game.roll = roll;
     }
-
+    
+    function createGameWithPrice(uint price)external returns(uint){
+        require(!playersActivity[msg.sender],"DOUBLE ENTRY IS NOT ALLOWED");
+        require(gameToken.balanceOf(msg.sender) >= price ,"Insufficient balance to join game");
+        require(gameToken.balanceOf(msg.sender)>= BASE_FEE,"Customed price must be greter than BASE FEE");
+        totalGameCounter+=1;
+        Game storage game = allGames[totalGameCounter];
+        game.gameId = totalGameCounter;
+        game.isActive= true;
+        game.players.push(msg.sender);
+        return game.gameId;
+    }
 }
 // test only 4 player can join game
 // test that when 4 players join game no one can join again
