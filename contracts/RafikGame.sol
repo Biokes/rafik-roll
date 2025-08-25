@@ -27,7 +27,7 @@ contract RafikGame {
     mapping (uint => Game) private allGames;
     mapping (address=> bool) playersActivity;
 
-    uint private totalGameCounter;
+    uint private totalGameCounter = 1000;
     uint constant private BASE_FEE = 1000000000000000000; 
 
     function joinGame(uint gameId)external {

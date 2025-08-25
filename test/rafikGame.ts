@@ -24,9 +24,8 @@ describe("rafik game test suite", function () {
     describe("player joining creates game", function () {
         it("tests insufficient balance cannot join game", async function () {
             const { p1, p2, game } = await loadFixture(deployAll);
-            const gameId = await game.connect(p1).createGameWithPrice.staticCall(ethers.parseEther("1.2"));
-            console.log("game id -> ", gameId )
-            await expect(game.connect(p2).joinGame(gameId))
+            await game.connect(p1).createGameWithPrice(ethers.parseEther("1.2"));
+            await expect(game.connect(p2).joinGame(1001))
                 .to.be.revertedWith("INSUFFICIENT BALANCE");
         });
       
