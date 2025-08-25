@@ -21,6 +21,7 @@ contract RafikGame {
         bool isActive;
         address[] players;
         uint roll;
+        uint price;
     }
 
     mapping (uint => Game) private allGames;
@@ -30,13 +31,14 @@ contract RafikGame {
     uint constant private BASE_FEE = 1000000000000000000; 
 
     function joinGame(uint gameId)external {
-        Game memory game = allGames[gameId];
+        Game storage game = allGames[gameId];
         require(game.isActive,"Invalid Game Id Provided");
         // require(!playersActivity[msg.sender], "ALready in a game");
-        require(!isInGame(msg.sender, game),"Already in this game");
-        require(gameToken.balanceOf(msg.sender)> BASE_FEE, "Insufficient balance to join game");
-        gameToken.approve(address(this), BASE_FEE);
-        gameToken.transferFrom(msg.sender, address(this),BASE_FEE);
+        require(!isInGame(msg.sender, game),"ALREADY JOINED GAME");
+        require(gameToken.balanceOf(msg.sender)> game.price, "INSUFFICIENT BALANCE");
+        gameToken.approve(address(this), game.price);
+        gameToken.transferFrom(msg.sender, address(this),game.price);
+        game.players.push(msg.sender);
     }
 
     function isInGame(address playerAddress, Game memory game) private pure returns (bool){
@@ -57,13 +59,14 @@ contract RafikGame {
     
     function createGameWithPrice(uint price)external returns(uint){
         require(!playersActivity[msg.sender],"DOUBLE ENTRY IS NOT ALLOWED");
-        require(gameToken.balanceOf(msg.sender) >= price ,"Insufficient balance to join game");
-        require(gameToken.balanceOf(msg.sender)>= BASE_FEE,"Customed price must be greter than BASE FEE");
+        require(gameToken.balanceOf(msg.sender) >= price ,"INSUFFICIENT BALANCE");
+        require(gameToken.balanceOf(msg.sender)>= BASE_FEE,"PRICE IS LOWER THAN BASE FEE");
         totalGameCounter+=1;
         Game storage game = allGames[totalGameCounter];
         game.gameId = totalGameCounter;
         game.isActive= true;
         game.players.push(msg.sender);
+        game.price = price;
         return game.gameId;
     }
 }
