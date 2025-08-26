@@ -33,10 +33,9 @@ contract RafikGame {
     function joinGame(uint gameId)external {
         Game storage game = allGames[gameId];
         require(game.isActive,"Invalid Game Id Provided");
-        // require(!playersActivity[msg.sender], "ALready in a game");
         require(!isInGame(msg.sender, game),"ALREADY JOINED GAME");
         require(gameToken.balanceOf(msg.sender)> game.price, "INSUFFICIENT BALANCE");
-        gameToken.approve(address(this), game.price);
+        // gameToken.approve(address(this), game.price);
         gameToken.transferFrom(msg.sender, address(this),game.price);
         game.players.push(msg.sender);
     }
@@ -58,11 +57,10 @@ contract RafikGame {
     }
     
     function createGameWithPrice(uint price)external returns(uint){
-        // require(!playersActivity[msg.sender],"DOUBLE ENTRY IS NOT ALLOWED");
         require(gameToken.balanceOf(msg.sender) >= price ,"INSUFFICIENT BALANCE");
         require(gameToken.balanceOf(msg.sender)>= BASE_FEE,"PRICE IS LOWER THAN BASE FEE");
         totalGameCounter+=1;
-        gameToken.approve(address(this),price);
+        // gameToken.approve(address(this),price);
         gameToken.transferFrom(msg.sender, address(this),price);
         Game storage game = allGames[totalGameCounter];
         game.gameId = totalGameCounter;
@@ -75,7 +73,7 @@ contract RafikGame {
     function createNewGame()external returns(uint){
         require(gameToken.balanceOf(msg.sender) >= BASE_FEE,"INSUFFICIENT BALANCE");
         totalGameCounter+=1;
-        gameToken.approve(address(this),BASE_FEE);
+        // gameToken.approve(address(this),BASE_FEE);
         gameToken.transferFrom(msg.sender, address(this),BASE_FEE);
         Game storage game = allGames[totalGameCounter];
         game.gameId = totalGameCounter;
@@ -84,10 +82,5 @@ contract RafikGame {
         game.price = BASE_FEE;
         return game.gameId;
     }
-
 }
-// test only 4 player can join game
-// test that when 4 players join game no one can join again
-// test that if a player selects a roll anither player cannit select roll 
-// test that if a players wins he is sent the pool prize
-// test that when no one wins from the roll the contract owns the all the stakes
+
