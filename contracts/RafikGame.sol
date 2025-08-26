@@ -32,10 +32,10 @@ contract RafikGame {
 
     function joinGame(uint gameId)external {
         Game storage game = allGames[gameId];
+        require(game.players.length<4,"GAME PLAYERS COMPLETE");
         require(game.isActive,"Invalid Game Id Provided");
         require(!isInGame(msg.sender, game),"ALREADY JOINED GAME");
         require(gameToken.balanceOf(msg.sender)> game.price, "INSUFFICIENT BALANCE");
-        // gameToken.approve(address(this), game.price);
         gameToken.transferFrom(msg.sender, address(this),game.price);
         game.players.push(msg.sender);
     }
@@ -49,7 +49,7 @@ contract RafikGame {
         return false;
     }
 
-    function rollDice(uint gameId) external {
+    function rollDice(uint gameId) public {
         uint roll = generator.getRandomNumber();
         Game storage game = allGames[gameId];
         require(game.isActive,"Invalid Gameid");
@@ -80,15 +80,12 @@ contract RafikGame {
         game.price = BASE_FEE;
         return game.gameId;
     }
-    function getGameWinner(uint gameId)external{
-        require(gameToken.balanceOf(msg.sender) >= BASE_FEE,"INSUFFICIENT BALANCE");
-        totalGameCounter+=1;
-        gameToken.transferFrom(msg.sender, address(this),BASE_FEE);
-        Game storage game = allGames[totalGameCounter];
-        game.gameId = totalGameCounter;
-        game.isActive= true;
-        game.players.push(msg.sender);
-        game.price = BASE_FEE;
-        return game.gameId;
+
+    function getWinner(uint gameId)external returns(uint){
+        Game storage game = allGames[gameId];
+        require(game.isActive && game.players.length>3,"NO WINNER YET");
+        rollDice(game.gameId);
+        
+        return game.roll;
     }
 }
