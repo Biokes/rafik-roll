@@ -21,4 +21,5 @@ contract TestGenerator is IRafikGenerator {
 
         return random % 6;
     }
+  
 }

@@ -60,7 +60,6 @@ contract RafikGame {
         require(gameToken.balanceOf(msg.sender) >= price ,"INSUFFICIENT BALANCE");
         require(gameToken.balanceOf(msg.sender)>= BASE_FEE,"PRICE IS LOWER THAN BASE FEE");
         totalGameCounter+=1;
-        // gameToken.approve(address(this),price);
         gameToken.transferFrom(msg.sender, address(this),price);
         Game storage game = allGames[totalGameCounter];
         game.gameId = totalGameCounter;
@@ -73,7 +72,17 @@ contract RafikGame {
     function createNewGame()external returns(uint){
         require(gameToken.balanceOf(msg.sender) >= BASE_FEE,"INSUFFICIENT BALANCE");
         totalGameCounter+=1;
-        // gameToken.approve(address(this),BASE_FEE);
+        gameToken.transferFrom(msg.sender, address(this),BASE_FEE);
+        Game storage game = allGames[totalGameCounter];
+        game.gameId = totalGameCounter;
+        game.isActive= true;
+        game.players.push(msg.sender);
+        game.price = BASE_FEE;
+        return game.gameId;
+    }
+    function getGameWinner(uint gameId)external{
+        require(gameToken.balanceOf(msg.sender) >= BASE_FEE,"INSUFFICIENT BALANCE");
+        totalGameCounter+=1;
         gameToken.transferFrom(msg.sender, address(this),BASE_FEE);
         Game storage game = allGames[totalGameCounter];
         game.gameId = totalGameCounter;
@@ -83,4 +92,3 @@ contract RafikGame {
         return game.gameId;
     }
 }
-
