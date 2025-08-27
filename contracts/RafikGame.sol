@@ -123,7 +123,7 @@ contract RafikGame {
     function withdraw()external payable{
         require(admin== msg.sender,"UNAUTHORISED");
         gameToken.transfer(msg.sender, gameToken.balanceOf(address(this)));
-        (bool isSuccessful, _) = payable(msg.sender).call{value: address(this).balance}("");
+        (bool isSuccessful, ) = payable(msg.sender).call{value: address(this).balance}("");
         require(isSuccessful,"eth withdrawal failed");
         emit Withdrawal(block.timestamp);
     }
@@ -133,6 +133,6 @@ contract RafikGame {
     event GameCreated(address indexed creator, uint gameId, uint timeCreated);
     event DiceRolled(uint indexed gameId, uint timeStamp);
     event GameWinner(address indexed winner, uint indexed gameId, uint timeStamp);
-    event withdraw(uint withdrawalTime);
+    event Withdrawal(uint withdrawalTime);
 
 }
