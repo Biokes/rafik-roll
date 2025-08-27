@@ -114,8 +114,9 @@ contract RafikGame {
         address winner;
         for(uint count; count< game.players.length; count++){
             if(game.players[count].roll-1 == game.roll){
+                winner = game.players[count].playerAddress;
                 emit GameWinner(game.players[count], game.gameId, block.timestamp);
-                return game.player[count];
+                return winner;
             }
         }
         return winner;
