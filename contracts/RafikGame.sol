@@ -12,7 +12,7 @@ contract RafikGame {
     event RandomResolved(uint256 indexed timeStamp,uint randomValues);
     event GameCreated(address indexed creator, uint gameId, uint timeCreated);
     event DiceRolled(uint indexed gameId, uint timeStamp);
-
+    event GameWinner(address indexed winner, uint indexed gameId, uint timeStamp);
     address private admin ;
 
     constructor(address generatorAddress, address gameTokenAddress) {
@@ -38,12 +38,12 @@ contract RafikGame {
     uint private totalGameCounter = 1000;
     uint constant private BASE_FEE = 1000000000000000000; 
 
-    modifer onlyOwner (){
+    modifier onlyOwner (){
         require(admin == msg.sender, "UNAUTHORISED");
         _;
     }
 
-    modifer rollRange (uint roll){
+    modifier rollRange (uint roll){
         require(roll > 0 && roll < 7, "INVALID DICE FACE");
         _;
     }
@@ -95,24 +95,30 @@ contract RafikGame {
         require(gameToken.balanceOf(msg.sender) >= BASE_FEE,"INSUFFICIENT BALANCE");
         totalGameCounter+=1;
         gameToken.transferFrom(msg.sender, address(this),BASE_FEE);
-        Game storage game;
+        Game storage game = allGames[totalGameCounter];
         game.gameId = totalGameCounter;
         game.isActive= true;
         game.players.push(Player(msg.sender,roll));
         game.price = BASE_FEE;
-        allGames[totalGameCounter] = game;
         emit GameCreated(msg.sender, game.gameId, block.timestamp );
         return game.gameId;
     }
 
 
-    function getWinner(uint gameId) onlyOwner external returns(uint){
+    function getWinner(uint gameId) onlyOwner external returns(address){
         Game storage game = allGames[gameId];
         require(game.isRolled,"NO WINNER YET");
+        require(game.isActive, "GAME NOT ACTIVE");
         rollDice(game.gameId);
         emit DiceRolled(gameId,block.timestamp);
-        
-        return game.roll+1;
+        address winner;
+        for(uint count; count< game.players.length; count++){
+            if(game.players[count].roll-1 == game.roll){
+                emit GameWinner(game.players[count], game.gameId, block.timestamp);
+                return game.player[count];
+            }
+        }
+        return winner;
     }
 
     receive()external{}
