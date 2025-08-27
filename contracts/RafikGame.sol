@@ -7,13 +7,10 @@ import {IRafikGenerator} from "./IRafikGenerator.sol";
 contract RafikGame {
     IRafikGenerator public generator;
     IERC20 private gameToken;
-
-    event RandomRequested(address indexed player, uint256 requestId);
-    event RandomResolved(uint256 indexed timeStamp,uint randomValues);
-    event GameCreated(address indexed creator, uint gameId, uint timeCreated);
-    event DiceRolled(uint indexed gameId, uint timeStamp);
-    event GameWinner(address indexed winner, uint indexed gameId, uint timeStamp);
     address private admin ;
+    uint private totalGameCounter = 1000;
+    uint constant private BASE_FEE = 1000000000000000000; 
+    mapping (uint => Game) private allGames;
 
     constructor(address generatorAddress, address gameTokenAddress) {
         generator = IRafikGenerator(generatorAddress);
@@ -29,14 +26,11 @@ contract RafikGame {
         uint price;
         bool isRolled;
     }
+
     struct Player{
         address playerAddress;
         uint roll;
     }
-    mapping (uint => Game) private allGames;
-
-    uint private totalGameCounter = 1000;
-    uint constant private BASE_FEE = 1000000000000000000; 
 
     modifier onlyOwner (){
         require(admin == msg.sender, "UNAUTHORISED");
@@ -115,21 +109,30 @@ contract RafikGame {
         for(uint count; count< game.players.length; count++){
             if(game.players[count].roll-1 == game.roll){
                 winner = game.players[count].playerAddress;
-                emit GameWinner(game.players[count], game.gameId, block.timestamp);
+                emit GameWinner(game.players[count].playerAddress, game.gameId, block.timestamp);
                 return winner;
             }
         }
         return winner;
     }
 
-    receive()external{}
+    receive()payable external{}
 
     fallback()external{}
 
     function withdraw()external payable{
         require(admin== msg.sender,"UNAUTHORISED");
         gameToken.transfer(msg.sender, gameToken.balanceOf(address(this)));
-        payable(msg.sender).call{value: address(this).balance}("");
+        (bool isSuccessful, _) = payable(msg.sender).call{value: address(this).balance}("");
+        require(isSuccessful,"eth withdrawal failed");
+        emit Withdrawal(block.timestamp);
     }
+    
+    event RandomRequested(address indexed player, uint256 requestId);
+    event RandomResolved(uint256 indexed timeStamp,uint randomValues);
+    event GameCreated(address indexed creator, uint gameId, uint timeCreated);
+    event DiceRolled(uint indexed gameId, uint timeStamp);
+    event GameWinner(address indexed winner, uint indexed gameId, uint timeStamp);
+    event withdraw(uint withdrawalTime);
 
 }
