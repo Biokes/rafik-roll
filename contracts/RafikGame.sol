@@ -27,24 +27,35 @@ contract RafikGame {
         Player[] players;
         uint roll;
         uint price;
+        bool isRolled;
     }
     struct Player{
+        address playerAddress;
         uint roll;
-        address palyerAddress;
     }
     mapping (uint => Game) private allGames;
 
     uint private totalGameCounter = 1000;
     uint constant private BASE_FEE = 1000000000000000000; 
 
-    function joinGame(uint gameId,uint roll)external {
+    modifer onlyOwner (){
+        require(admin == msg.sender, "UNAUTHORISED");
+        _;
+    }
+
+    modifer rollRange (uint roll){
+        require(roll > 0 && roll < 7, "INVALID DICE FACE");
+        _;
+    }
+
+    function joinGame(uint gameId,uint roll) rollRange(roll) external {
         Game storage game = allGames[gameId];
         require(game.players.length<4,"GAME PLAYERS COMPLETE");
         require(game.isActive,"Invalid Game Id Provided");
         require(!isInGame(msg.sender, game),"ALREADY JOINED GAME");
         require(gameToken.balanceOf(msg.sender)> game.price, "INSUFFICIENT BALANCE");
         gameToken.transferFrom(msg.sender, address(this),game.price);
-        game.players.push(Player(roll, msg.sender));
+        game.players.push(Player(msg.sender,roll));
     }
 
     function isInGame(address playerAddress, Game memory game) private pure returns (bool){
@@ -55,16 +66,17 @@ contract RafikGame {
         }
         return false;
     }
-
-    function rollDice(uint gameId) public {
-        require(admin== msg.sender, "UNAUTHORISED");
-        uint roll = generator.getRandomNumber();
+    
+    function rollDice(uint gameId) public onlyOwner {
         Game storage game = allGames[gameId];
+        require(!game.isRolled,"WINNER ALREADY ATTAINED");
         require(game.isActive,"Invalid Gameid");
+        uint roll = generator.getRandomNumber();
         game.roll = roll;
+        game.isRolled = true;
     }
     
-    function createGameWithPrice(uint price,uint roll)external returns(uint){
+    function createGameWithPrice(uint price,uint roll) rollRange(roll) external returns(uint){
         require(gameToken.balanceOf(msg.sender) >= price ,"INSUFFICIENT BALANCE");
         require(gameToken.balanceOf(msg.sender)>= BASE_FEE,"PRICE IS LOWER THAN BASE FEE");
         totalGameCounter+=1;
@@ -79,11 +91,11 @@ contract RafikGame {
     }
 
 
-    function createNewGame(uint roll)external returns(uint){
+    function createNewGame(uint roll) rollRange(roll) external returns(uint){
         require(gameToken.balanceOf(msg.sender) >= BASE_FEE,"INSUFFICIENT BALANCE");
         totalGameCounter+=1;
         gameToken.transferFrom(msg.sender, address(this),BASE_FEE);
-        Game memory game;
+        Game storage game;
         game.gameId = totalGameCounter;
         game.isActive= true;
         game.players.push(Player(msg.sender,roll));
@@ -94,21 +106,22 @@ contract RafikGame {
     }
 
 
-    function getWinner(uint gameId)external returns(uint){
+    function getWinner(uint gameId) onlyOwner external returns(uint){
         Game storage game = allGames[gameId];
-        require(game.isActive && game.players.length>3,"NO WINNER YET");
+        require(game.isRolled,"NO WINNER YET");
         rollDice(game.gameId);
         emit DiceRolled(gameId,block.timestamp);
-        return game.roll;
+        
+        return game.roll+1;
     }
 
-    recieve()external{}
+    receive()external{}
 
     fallback()external{}
 
     function withdraw()external payable{
         require(admin== msg.sender,"UNAUTHORISED");
-        token.transfer(token.balanceOf(address(this), msg.sender));
+        gameToken.transfer(msg.sender, gameToken.balanceOf(address(this)));
         payable(msg.sender).call{value: address(this).balance}("");
     }
 
