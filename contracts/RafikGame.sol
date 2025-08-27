@@ -54,6 +54,7 @@ contract RafikGame {
     }
 
     function rollDice(uint gameId) public {
+        require(admin== msg.sender, "UNAUTHORISED");
         uint roll = generator.getRandomNumber();
         Game storage game = allGames[gameId];
         require(game.isActive,"Invalid Gameid");
@@ -70,8 +71,11 @@ contract RafikGame {
         game.isActive= true;
         game.players.push(Player(msg.sender,roll));
         game.price = price;
+        emit GameCreated(msg.sender, game.gameId, block.timestamp );
         return game.gameId;
     }
+
+    event GameCreated(address indexed creator, uint gameId, uint timeCreated);
 
     function createNewGame(uint roll)external returns(uint){
         require(gameToken.balanceOf(msg.sender) >= BASE_FEE,"INSUFFICIENT BALANCE");
@@ -83,13 +87,17 @@ contract RafikGame {
         game.players.push(Player(msg.sender,roll));
         game.price = BASE_FEE;
         allGames[totalGameCounter] = game;
+        emit GameCreated(msg.sender, game.gameId, block.timestamp );
         return game.gameId;
     }
+
+    event DiceRolled(uint indexed gameId, uint timeStamp);
 
     function getWinner(uint gameId)external returns(uint){
         Game storage game = allGames[gameId];
         require(game.isActive && game.players.length>3,"NO WINNER YET");
         rollDice(game.gameId);
+        emit DiceRolled(gameId,block.timestamp);
         return game.roll;
     }
 
