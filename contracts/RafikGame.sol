@@ -10,6 +10,9 @@ contract RafikGame {
 
     event RandomRequested(address indexed player, uint256 requestId);
     event RandomResolved(uint256 indexed timeStamp,uint randomValues);
+    event GameCreated(address indexed creator, uint gameId, uint timeCreated);
+    event DiceRolled(uint indexed gameId, uint timeStamp);
+
     address private admin ;
 
     constructor(address generatorAddress, address gameTokenAddress) {
@@ -75,7 +78,6 @@ contract RafikGame {
         return game.gameId;
     }
 
-    event GameCreated(address indexed creator, uint gameId, uint timeCreated);
 
     function createNewGame(uint roll)external returns(uint){
         require(gameToken.balanceOf(msg.sender) >= BASE_FEE,"INSUFFICIENT BALANCE");
@@ -91,7 +93,6 @@ contract RafikGame {
         return game.gameId;
     }
 
-    event DiceRolled(uint indexed gameId, uint timeStamp);
 
     function getWinner(uint gameId)external returns(uint){
         Game storage game = allGames[gameId];
